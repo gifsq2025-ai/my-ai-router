@@ -1,1 +1,34 @@
-﻿import { Bot } from "grammy"; import { generateText } from "ai"; import { createGroq } from "@ai-sdk/groq"; import "dotenv/config"; const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN); const groq = createGroq({ apiKey: process.env.GROQ_API_KEY }); bot.command("start", (ctx) => ctx.reply("Namaste! Session started. Ask me anything.")); bot.command("reset", (ctx) => ctx.reply("Session reset successfully.")); bot.on("message:text", async (ctx) => { if (ctx.message.text.startsWith("/")) return; try { await ctx.replyWithChatAction("typing"); const { text } = await generateText({ model: groq("llama-3.3-70b-versatile"), prompt: ctx.message.text }); await ctx.reply(text); } catch (err) { console.error("Error details:", err.message); await ctx.reply("Error: " + err.message); } }); console.log("Bot started successfully with Groq!"); bot.start();
+import { Bot } from "grammy";
+import { generateText } from "ai";
+import { createGroq } from "@ai-sdk/groq";
+import "dotenv/config";
+import http from "http";
+
+const groq = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
+const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN);
+
+bot.on("message:text", async (ctx) => {
+  try {
+    const { text } = await generateText({
+      model: groq("llama-3.3-70b-versatile"),
+      prompt: ctx.message.text,
+    });
+    await ctx.reply(text);
+  } catch (error) {
+    console.error("Error generating response:", error);
+    await ctx.reply("माफ गर्नुहोला, म्यासेज प्रोसेस गर्दा त्रुटि भयो।");
+  }
+});
+
+bot.start();
+
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  res.end("Bot is running 24/7\n");
+}).listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
