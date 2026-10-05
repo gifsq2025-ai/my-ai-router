@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "Viral Video Agent",
+  "version": "0.1.0",
+  "description": "Gemini-powered faceless video pipeline you drive from Telegram: script, timed subtitles, image prompts, SRT and metadata, then automated fill-in on CloneVoice, Artistly and VideoExpress.",
+  "permissions": ["storage", "alarms", "tabs", "scripting", "downloads"],
+  "host_permissions": [
+    "https://app.clonevoice.ai/*",
+    "https://*.clonevoice.ai/*",
+    "https://app.artistly.ai/*",
+    "https://*.artistly.ai/*",
+    "https://app.videoexpress.ai/*",
+    "https://*.videoexpress.ai/*",
+    "https://api.telegram.org/*",
+    "https://generativelanguage.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "ui/popup.html",
+    "default_title": "Viral Video Agent",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "ui/options.html",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://app.clonevoice.ai/*",
+        "https://app.artistly.ai/*",
+        "https://app.videoexpress.ai/*"
+      ],
+      "js": ["content/dom.js", "content/sites.js", "content/player.js", "content/content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

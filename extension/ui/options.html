@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Viral Video Agent — Settings</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body class="options">
+    <h1>Viral Video Agent</h1>
+    <p class="sub">Keys stay in this browser only (<code>chrome.storage.local</code>). Nothing is sent anywhere except Google and Telegram.</p>
+
+    <section class="card">
+      <h2>1. Gemini</h2>
+      <label for="geminiKey">API key — from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">aistudio.google.com/apikey</a></label>
+      <div class="inline">
+        <input id="geminiKey" type="password" placeholder="AIza…" autocomplete="off" />
+        <button id="toggle-key" class="link">show</button>
+      </div>
+
+      <label for="geminiModel">Text model</label>
+      <div class="inline">
+        <input id="geminiModel" type="text" list="model-list" placeholder="gemini-2.5-flash" />
+        <button id="btn-list-models">List models</button>
+        <button id="btn-test-gemini" class="primary">Test</button>
+      </div>
+      <datalist id="model-list">
+        <option value="gemini-2.5-flash"></option>
+        <option value="gemini-2.5-flash-lite"></option>
+        <option value="gemini-2.5-pro"></option>
+        <option value="gemini-2.0-flash"></option>
+      </datalist>
+      <p class="note">Google gates some models per account. If Test returns a 404, press “List models” and pick one your key can actually call.</p>
+
+      <label for="geminiImageModel">Image model (used by <code>/images</code>)</label>
+      <input id="geminiImageModel" type="text" placeholder="gemini-2.5-flash-image" />
+    </section>
+
+    <section class="card">
+      <h2>2. Telegram</h2>
+      <label for="telegramToken">Bot token — from <a href="https://t.me/BotFather" target="_blank" rel="noreferrer">@BotFather</a></label>
+      <div class="inline">
+        <input id="telegramToken" type="password" placeholder="123456:ABC…" autocomplete="off" />
+        <button id="btn-test-telegram">Verify</button>
+      </div>
+      <p class="note warn">Use a <strong>different</strong> bot from the one your Render bot in <code>index.js</code> polls. Two programs polling one token make Telegram answer 409 and messages go missing.</p>
+
+      <label for="chatId">Your chat id</label>
+      <div class="inline">
+        <input id="chatId" type="text" placeholder="123456789" />
+        <button id="btn-discover">Find it</button>
+      </div>
+      <p class="note">Send any message to your bot first, then press “Find it”. Or send <code>/start</code> — the bot replies with your id.</p>
+
+      <label class="check"><input id="telegramPolling" type="checkbox" /> Listen for Telegram commands</label>
+    </section>
+
+    <section class="card">
+      <h2>3. Pipeline</h2>
+      <div class="two-col">
+        <div>
+          <label for="topicCount">Titles per request</label>
+          <input id="topicCount" type="number" min="1" max="10" />
+        </div>
+        <div>
+          <label for="wordsPerMinute">Speaking rate (wpm)</label>
+          <input id="wordsPerMinute" type="number" min="80" max="250" />
+        </div>
+        <div>
+          <label for="imagesPerPrompt">Images per scene</label>
+          <input id="imagesPerPrompt" type="number" min="1" max="4" />
+        </div>
+        <div>
+          <label for="downloadFolder">Download folder</label>
+          <input id="downloadFolder" type="text" />
+        </div>
+      </div>
+      <label class="check"><input id="autoOpenTabs" type="checkbox" /> Open the three tool tabs when a run finishes</label>
+      <p class="note">Turn off “Ask where to save each file” in <code>chrome://settings/downloads</code> or every image will prompt you.</p>
+    </section>
+
+    <section class="card">
+      <h2>4. Artistly loop timing</h2>
+      <div class="two-col">
+        <div>
+          <label for="minDelayMs">Min delay between images (ms)</label>
+          <input id="minDelayMs" type="number" min="0" step="1000" />
+        </div>
+        <div>
+          <label for="maxDelayMs">Max delay (ms)</label>
+          <input id="maxDelayMs" type="number" min="0" step="1000" />
+        </div>
+        <div>
+          <label for="generateWaitMs">Wait for an image (ms)</label>
+          <input id="generateWaitMs" type="number" min="5000" step="1000" />
+        </div>
+      </div>
+      <p class="note">The delay is randomised between min and max so the site does not see a metronome.</p>
+    </section>
+
+    <section class="card">
+      <h2>5. Site selectors</h2>
+      <p class="note">
+        The dashboards are behind a login, so the agent guesses the prompt box and the Generate button.
+        If it guesses wrong, open the site, press <strong>“Teach selector”</strong> in the panel and click the box and the button —
+        they are filled in here automatically and always win over the guesses.
+      </p>
+      <div id="selector-fields"></div>
+    </section>
+
+    <section class="card">
+      <div class="inline">
+        <button id="save" class="primary">Save</button>
+        <button id="reset-project">Clear current project</button>
+        <span id="saved"></span>
+      </div>
+      <pre id="last-error" class="error" hidden></pre>
+    </section>
+
+    <script src="options.js"></script>
+  </body>
+</html>

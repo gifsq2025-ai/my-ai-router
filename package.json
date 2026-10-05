@@ -1,1 +1,18 @@
-{"name":"my-ai-router","version":"1.0.0","type":"module","dependencies":{"@ai-sdk/google":"^1.1.0","@ai-sdk/groq":"^4.0.26","@ai-sdk/openai":"^1.1.0","ai":"^7.0.58","dotenv":"^16.4.7","grammy":"^1.45.1"}}
+{
+  "name": "my-ai-router",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@ai-sdk/google": "^1.1.0",
+    "@ai-sdk/groq": "^4.0.26",
+    "@ai-sdk/openai": "^1.1.0",
+    "ai": "^7.0.58",
+    "dotenv": "^16.4.7",
+    "grammy": "^1.45.1"
+  },
+  "scripts": {
+    "test": "node --test \"extension/test/**/*.test.mjs\"",
+    "check:ext": "node extension/tools/check-extension.mjs",
+    "icons": "node extension/tools/make-icons.mjs"
+  }
+}

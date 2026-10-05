@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Viral Video Agent</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body class="popup">
+    <header>
+      <h1>Viral Video Agent</h1>
+      <button id="open-options" class="link" title="Settings">⚙</button>
+    </header>
+
+    <section id="status-card" class="card">
+      <div class="row"><span class="label">Stage</span><span id="stage">-</span></div>
+      <div class="bar"><div id="bar-fill"></div></div>
+      <div class="row"><span class="label">Topic</span><span id="topic" class="ellipsis">-</span></div>
+      <div class="row"><span class="label">Cues</span><span id="cues">-</span></div>
+      <div class="row"><span class="label">Prompts</span><span id="prompts">-</span></div>
+      <pre id="error" class="error" hidden></pre>
+    </section>
+
+    <section class="card">
+      <label for="niche">Niche</label>
+      <div class="inline">
+        <input id="niche" type="text" placeholder="human psychology" />
+        <button id="btn-topics">Topics</button>
+      </div>
+
+      <div id="topic-list" class="topics"></div>
+    </section>
+
+    <section class="card">
+      <button id="btn-approve" class="primary">Approve &amp; run everything</button>
+      <button id="btn-stop">Stop</button>
+      <div class="grid">
+        <button data-site="clonevoice">Open CloneVoice</button>
+        <button data-site="artistly">Open Artistly</button>
+        <button data-site="videoexpress">Open VideoExpress</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <button id="btn-pause">Pause images</button>
+        <button id="btn-resume">Resume images</button>
+        <button id="btn-copy-prompts">Copy prompts</button>
+        <button id="btn-copy-meta">Copy metadata</button>
+      </div>
+    </section>
+
+    <footer id="hint">Set your Gemini key and Telegram token in ⚙ first.</footer>
+    <script src="popup.js"></script>
+  </body>
+</html>
