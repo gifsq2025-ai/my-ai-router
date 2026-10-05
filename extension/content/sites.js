@@ -67,11 +67,17 @@
       input: ['textarea[placeholder*="description" i]', 'input[placeholder*="title" i]', "textarea"],
       buttons: { generate: ["export", "render", "create video", "generate"] },
       autoClick: false,
+      // Everything lives in the right-hand icon rail (see the dashboard screenshot):
+      // one step per rail entry, in the order a human would assemble the video.
+      assembly: [
+        { label: "Voiceover", fill: "script", hint: "paste the script, pick a calm voice, generate" },
+        { label: "Captions", fill: "srt", hint: "captions.srt is uploaded for you, or import it" },
+        { label: "Uploads", fill: "images", hint: "add the images from Downloads/viral" },
+      ],
       instructions: [
-        "Upload the MP3 from CloneVoice.",
-        "Upload the images from Downloads/viral.",
-        "Upload captions.srt from Telegram.",
-        "Export 1080p, 16:9.",
+        "The Voiceover, Captions and Uploads tools are all in the right sidebar.",
+        "The agent opens each one and fills what it can, then pauses for you.",
+        "Export 1080p, 16:9 when the timeline looks right.",
       ],
     },
   };

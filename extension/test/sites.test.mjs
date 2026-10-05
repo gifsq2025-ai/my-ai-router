@@ -47,3 +47,13 @@ test("every site profile has the fields the content script reads", () => {
     assert.ok(site.instructions.length > 0, `${site.key} instructions`);
   }
 });
+
+test("VideoExpress has a sidebar-driven assembly plan matching the dashboard rail", () => {
+  const steps = [...SITES.videoexpress.assembly.map((s) => s.label)];
+  assert.deepEqual(steps, ["Voiceover", "Captions", "Uploads"]);
+  assert.deepEqual([...SITES.videoexpress.assembly.map((s) => s.fill)], ["script", "srt", "images"]);
+});
+
+test("every assembly step carries a fallback hint for when the rail is absent", () => {
+  for (const step of SITES.videoexpress.assembly) assert.ok(step.hint.length > 0);
+});

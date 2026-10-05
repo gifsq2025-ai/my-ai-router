@@ -21,54 +21,99 @@
 
   // ---------- panel ----------
 
-  function panel(body) {
-    if (!panelEl) {
-      panelEl = document.createElement("div");
-      panelEl.id = "vva-panel";
-      panelEl.style.cssText = [
-        "position:fixed", "top:12px", "right:12px", "z-index:2147483647",
-        "width:320px", "max-height:80vh", "overflow:auto",
-        "background:#101317", "color:#e8eaed", "border:1px solid #2c3138",
-        "border-radius:10px", "padding:12px", "font:13px/1.5 system-ui,sans-serif",
-        "box-shadow:0 8px 28px rgba(0,0,0,.45)",
-      ].join(";");
-      document.documentElement.appendChild(panelEl);
+  // The dashboards put their tools in a right-hand icon rail, so the agent lives in one too.
+  let railEl = null;
+  let cardEl = null;
+
+  function railButton(icon, label, onClick, active) {
+    const b = document.createElement("button");
+    b.title = label;
+    b.innerHTML = `<span style="font-size:15px;line-height:1">${icon}</span><span style="font-size:10px;line-height:1.1">${label}</span>`;
+    b.style.cssText =
+      "display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;" +
+      "width:52px;padding:7px 2px;background:none;border:none;cursor:pointer;font:inherit;color:#3c4043;";
+    if (active) b.style.cssText += "background:#e8f0fe;border-radius:8px;";
+    b.onclick = onClick;
+    return b;
+  }
+
+  function ensureRail() {
+    if (railEl) return railEl;
+    railEl = document.createElement("div");
+    railEl.id = "vva-rail";
+    railEl.style.cssText = [
+      "position:fixed", "top:0", "right:0", "height:100%", "z-index:2147483646",
+      "width:56px", "background:#ffffff", "border-left:1px solid #dadce0",
+      "display:flex", "flex-direction:column", "align-items:center", "gap:2px",
+      "padding:8px 2px", "font:13px system-ui,sans-serif", "box-sizing:border-box",
+    ].join(";");
+    document.documentElement.appendChild(railEl);
+
+    const head = document.createElement("div");
+    head.style.cssText = "font-size:10px;color:#1a73e8;font-weight:700;margin-bottom:4px";
+    head.textContent = "VVA";
+    railEl.appendChild(head);
+
+    railEl.appendChild(railButton("▶", "Run", () => handleAction(site.task === "images" ? "VVA_RUN" : "VVA_FILL")));
+    if (site.task === "images") {
+      railEl.appendChild(railButton("⏸", "Pause", () => handleAction("VVA_PAUSE")));
+      railEl.appendChild(railButton("⏭", "Skip", () => handleAction("VVA_SKIP")));
+      railEl.appendChild(railButton("↻", "Retry", () => handleAction("VVA_RETRY")));
     }
+    railEl.appendChild(railButton("✎", "Teach", () => startLearning()));
+    railEl.appendChild(railButton("💬", "Info", () => toggleCard(true), true));
+    railEl.appendChild(railButton("✕", "Hide", () => {
+      railEl?.remove();
+      railEl = null;
+      cardEl?.remove();
+      cardEl = null;
+    }));
+    return railEl;
+  }
+
+  function toggleCard(open) {
+    if (open === false || cardEl) {
+      cardEl?.remove();
+      cardEl = null;
+      return;
+    }
+    cardEl = document.createElement("div");
+    cardEl.style.cssText = [
+      "position:fixed", "top:12px", "right:64px", "z-index:2147483647",
+      "width:300px", "max-height:80vh", "overflow:auto",
+      "background:#ffffff", "color:#202124", "border:1px solid #dadce0",
+      "border-radius:10px", "padding:12px", "font:13px/1.5 system-ui,sans-serif",
+      "box-shadow:0 8px 24px rgba(60,64,67,.25)",
+    ].join(";");
+    document.documentElement.appendChild(cardEl);
+    renderCard(statusText);
+  }
+
+  function panel(body) {
     statusText = body;
-    panelEl.innerHTML = "";
+    ensureRail();
+    if (!cardEl) toggleCard(true); // surface the message; the user can Close or Hide
+    renderCard(body);
+  }
+
+  function renderCard(body) {
+    if (!cardEl) return;
+    cardEl.innerHTML = "";
     const title = document.createElement("div");
     title.style.cssText = "font-weight:600;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px";
-    title.innerHTML = `<span>Viral Video Agent</span><span style="opacity:.6">${site.label}</span>`;
-    panelEl.appendChild(title);
+    title.innerHTML = `<span>Viral Video Agent</span><span style="color:#5f6368">${site.label}</span>`;
+    cardEl.appendChild(title);
 
     const text = document.createElement("div");
     text.style.cssText = "white-space:pre-wrap;word-break:break-word";
     text.textContent = typeof body === "string" ? body : "";
-    panelEl.appendChild(text);
+    cardEl.appendChild(text);
 
-    const bar = document.createElement("div");
-    bar.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;margin-top:10px";
-    for (const button of site.task === "images"
-      ? [["Pause", "VVA_PAUSE"], ["Resume", "VVA_RESUME"], ["Skip", "VVA_SKIP"], ["Retry", "VVA_RETRY"]]
-      : [["Fill now", "VVA_FILL"]]) {
-      const b = document.createElement("button");
-      b.textContent = button[0];
-      b.style.cssText = "background:#1f2630;color:#e8eaed;border:1px solid #39414c;border-radius:6px;padding:5px 9px;cursor:pointer;font:inherit";
-      b.onclick = () => handleAction(button[1]);
-      bar.appendChild(b);
-    }
-    const learn = document.createElement("button");
-    learn.textContent = learnMode ? `Click the ${learnMode}…` : "Teach selector";
-    learn.style.cssText = "background:#2b3a55;color:#e8eaed;border:1px solid #3d5480;border-radius:6px;padding:5px 9px;cursor:pointer;font:inherit";
-    learn.onclick = () => startLearning();
-    bar.appendChild(learn);
-
-    const hide = document.createElement("button");
-    hide.textContent = "Hide";
-    hide.style.cssText = "background:transparent;color:#9aa0a6;border:1px solid #39414c;border-radius:6px;padding:5px 9px;cursor:pointer;font:inherit";
-    hide.onclick = () => panelEl.remove();
-    bar.appendChild(hide);
-    panelEl.appendChild(bar);
+    const close = document.createElement("button");
+    close.textContent = "Close";
+    close.style.cssText = "margin-top:10px;background:#f1f3f4;color:#3c4043;border:1px solid #dadce0;border-radius:6px;padding:5px 10px;cursor:pointer;font:inherit";
+    close.onclick = () => toggleCard(false);
+    cardEl.appendChild(close);
   }
 
   async function getConfig() {
@@ -151,7 +196,11 @@ Then I will ask for the button.`);
       if (!looping) runArtistlyLoop();
       return;
     }
-    if (action === "VVA_FILL") return site.task === "images" ? runArtistlyLoop() : fillText();
+    if (action === "VVA_FILL" || action === "VVA_ASSEMBLE") {
+      if (site.task === "images") return runArtistlyLoop();
+      if (site.task === "assemble") return runAssembly();
+      return fillText();
+    }
     if (action === "VVA_RUN") return runArtistlyLoop();
   }
 
@@ -350,14 +399,72 @@ Then I will ask for the button.`);
     return true;
   }
 
-  // ---------- VideoExpress: guidance, not blind clicking ----------
+  // ---------- VideoExpress: drive the sidebar, fill what we can ----------
+
+  async function getProject() {
+    return (await chrome.storage.local.get("vva:project"))["vva:project"];
+  }
+
+  async function runAssembly() {
+    const steps = site.assembly || [];
+    if (!steps.length) return showAssemblyGuide();
+    const queue = await getQueue();
+    const project = await getProject();
+    const config = await getConfig();
+    const report = [];
+    for (const step of steps) {
+      panel(`Opening ${step.label}…`);
+      const button = DOM.findSidebarItem(document, step.label);
+      if (!button) {
+        report.push(`• ${step.label}: not found - ${step.hint}.`);
+        continue;
+      }
+      button.click();
+      await DOM.sleep(900);
+
+      if (step.fill === "script") {
+        const text = queue.clonevoice?.text || project?.script || "";
+        const input = DOM.resolveInput(document, site, "");
+        if (input && text) {
+          DOM.setNativeValue(input, text);
+          report.push(`• ${step.label}: script pasted (${text.length} chars). Pick a voice, generate.`);
+        } else report.push(`• ${step.label}: opened - ${step.hint}.`);
+      } else if (step.fill === "srt") {
+        const srt = project?.srt || "";
+        if (!srt) {
+          report.push(`• ${step.label}: no captions yet - send /approve in Telegram first.`);
+        } else {
+          const fileInput = DOM.findFileInput(document, "srt|vtt|text|subtitle");
+          const attached = fileInput && DOM.setFileInput(fileInput, [{ name: "captions.srt", type: "application/x-subrip", data: srt }]);
+          if (attached) report.push(`• ${step.label}: captions.srt uploaded for you.`);
+          else {
+            const input = DOM.resolveInput(document, site, "");
+            if (input) {
+              DOM.setNativeValue(input, srt);
+              report.push(`• ${step.label}: SRT pasted as text.`);
+            } else report.push(`• ${step.label}: opened - ${step.hint}.`);
+          }
+        }
+      } else if (step.fill === "images") {
+        const fileInput = DOM.findFileInput(document, "image");
+        report.push(
+          fileInput
+            ? `• ${step.label}: uploader ready - add the images from Downloads/${config.downloadFolder || "viral"}/.`
+            : `• ${step.label}: ${step.hint}.`
+        );
+      } else {
+        report.push(`• ${step.label}: opened - ${step.hint}.`);
+      }
+    }
+    panel(
+      ["Assembly pass complete:", "", ...report, "", ...site.instructions.map((line, i) => `${i + 1}. ${line}`)].join("\n")
+    );
+  }
 
   async function showAssemblyGuide() {
-    const project = (await chrome.storage.local.get("vva:project"))["vva:project"];
-    const lines = ["Assemble the video here:", "", ...site.instructions.map((s, i) => `${i + 1}. ${s}`)];
-    if (project?.meta?.title) {
-      lines.push("", "Title and description are on the clipboard buttons below.", "", `Title: ${project.meta.title}`);
-    }
+    const project = await getProject();
+    const lines = ["Assemble the video here:", "", ...site.instructions.map((line, i) => `${i + 1}. ${line}`)];
+    if (project?.meta?.title) lines.push("", `Title: ${project.meta.title}`);
     panel(lines.join("\n"));
   }
 
@@ -402,6 +509,6 @@ Then I will ask for the button.`);
   setTimeout(() => {
     if (site.task === "images") runArtistlyLoop();
     else if (site.task === "voice") fillText();
-    else showAssemblyGuide();
+    else runAssembly();
   }, 2500);
 })();

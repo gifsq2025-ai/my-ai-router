@@ -130,7 +130,7 @@
    * wins over "Generate another" when the adapter asks for "generate".
    */
   function findButton(doc, options = {}) {
-    const { words = [], overrideSelector, container, exclude = [] } = options;
+    const { words = [], overrideSelector, container, exclude = [], exact = false } = options;
     if (overrideSelector) {
       const el = bestMatch(doc, overrideSelector);
       if (el) return el;
@@ -241,6 +241,59 @@
     };
   }
 
+  /**
+   * The three dashboards put every tool in a right-hand icon rail ("Voiceover",
+   * "Captions", "Uploads", ...). Find the matching rail entry by its visible label.
+   */
+  function findSidebarItem(doc, label, overrideSelector) {
+    if (overrideSelector) {
+      const el = bestMatch(doc, overrideSelector);
+      if (el) return el;
+    }
+    const rails = queryAll(doc, "nav, aside, [role='navigation'], [class*='sidebar' i], [class*='rail' i], [class*='tools' i]");
+    const scoped = rails.length
+      ? findButton({ querySelectorAll: (sel) => rails.flatMap((r) => queryAll(r, sel)) }, { words: [label], exact: true })
+      : null;
+    return scoped || findButton(doc, { words: [label], exact: true });
+  }
+
+  /** Locate a file input, optionally filtered by what it accepts (srt, image/*, ...). */
+  function findFileInput(doc, acceptPattern) {
+    const inputs = queryAll(doc, 'input[type="file"]').filter(isVisible);
+    if (!inputs.length) return null;
+    if (!acceptPattern) return inputs[0];
+    const re = new RegExp(acceptPattern, "i");
+    return inputs.find((i) => re.test(i.getAttribute("accept") || "")) || null;
+  }
+
+  /**
+   * Put real files into a file input so a site's Uploads/Captions panel accepts them.
+   * `files` is [{ name, type, data }] where data is a string or bytes. Chromium allows
+   * assigning input.files from a DataTransfer, which is what makes automation possible.
+   * Returns false on engines without File/DataTransfer so callers can fall back to hints.
+   */
+  function setFileInput(input, files, win) {
+    if (!input || !files?.length) return false;
+    win = win || input.ownerDocument?.defaultView || global;
+    const FileCtor = win.File;
+    const DataTransferCtor = win.DataTransfer;
+    if (typeof FileCtor !== "function" || typeof DataTransferCtor !== "function") return false;
+    const dt = new DataTransferCtor();
+    for (const file of files) {
+      const bytes = typeof file.data === "string" ? file.data : file.data;
+      dt.items.add(new FileCtor([bytes], file.name, { type: file.type || "application/octet-stream" }));
+    }
+    try {
+      input.files = dt.files;
+    } catch {
+      return false;
+    }
+    const E = win.Event || global.Event;
+    input.dispatchEvent(new E("change", { bubbles: true }));
+    input.dispatchEvent(new E("input", { bubbles: true }));
+    return true;
+  }
+
   const api = {
     sleep,
     normalizeText,
@@ -255,6 +308,9 @@
     resolveInput,
     scanImages,
     createImageWatcher,
+    findSidebarItem,
+    findFileInput,
+    setFileInput,
     IGNORE_IMAGE_PATTERN,
   };
 

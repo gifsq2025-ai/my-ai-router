@@ -35,9 +35,10 @@ Nobody can read your CloneVoice/Artistly/VideoExpress markup from outside, so th
 the prompt box and the Generate button with a size-and-visibility heuristic, and then you can teach
 it for real:
 
-- On the site, the black **Viral Video Agent** panel has a **Teach selector** button. Click it, then
-  click the text box, then the Generate button. The exact selectors are saved to Options and always
-  win over the guesses.
+- The agent shows up as a slim **right-hand rail** (like the apps' own sidebars) with Run / Pause /
+  Skip / Teach buttons and an expandable info card.
+- The card's **Teach** button lets you click the real text box / Generate button yourself; the exact
+  selectors are saved to Options and always win over the guesses.
 
 Behaviour per site:
 
@@ -47,7 +48,11 @@ Behaviour per site:
   `Downloads/viral/`, pauses a random 5–15 s so the site doesn't see a metronome, and repeats.
   Identical consecutive prompts are reused instead of regenerated. `Pause`/`Resume`/`Skip`/`Retry`
   in the panel, or `/pause` `/resume` `/queue` in Telegram.
-- **VideoExpress** – shows the assembly checklist (MP3 + images + `captions.srt`, export 1080p).
+- **VideoExpress** – the editor puts every tool in a right-hand icon rail (Voiceover, Captions,
+  Uploads, ...), so the agent *clicks that sidebar* in order: opens **Voiceover** and pastes the
+  script; opens **Captions** and uploads `captions.srt` straight into the file input (or pastes it);
+  opens **Uploads** and points you at `Downloads/viral/`. It reports, per step, exactly what it did
+  and what is left for you.
 
 If a render shows up in a `<canvas>` instead of an `<img>`, or a credits dialog blocks the button,
 the loop pauses and tells you exactly why rather than burning a prompt.

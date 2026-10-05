@@ -158,3 +158,82 @@ test("scanImages accepts blob urls, which is how a canvas-based site exposes out
 test("normalizeText collapses whitespace and case", () => {
   assert.equal(DOM.normalizeText("  Generate   VIDEO "), "generate video");
 });
+
+test("findSidebarItem finds the rail entry by its visible label", () => {
+  const doc = makeDocument();
+  const rail = element("nav");
+  doc.body.appendChild(rail);
+  for (const label of ["AI Video", "Voiceover", "Captions"]) rail.appendChild(element("button", { text: label }));
+  const found = DOM.findSidebarItem(doc, "Voiceover");
+  assert.equal(DOM.normalizeText(found.innerText), "voiceover");
+});
+
+test("findSidebarItem uses an exact label, not a substring", () => {
+  const doc = makeDocument();
+  const rail = element("nav");
+  doc.body.appendChild(rail);
+  rail.appendChild(element("button", { text: "Voiceover settings" }));
+  rail.appendChild(element("button", { text: "Voiceover" }));
+  const found = DOM.findSidebarItem(doc, "Voiceover");
+  assert.equal(DOM.normalizeText(found.innerText), "voiceover", "must not click 'Voiceover settings'");
+});
+
+test("findSidebarItem falls back to a full-document exact search", () => {
+  const doc = makeDocument();
+  doc.body.appendChild(element("button", { text: "Uploads" }));
+  assert.equal(DOM.normalizeText(DOM.findSidebarItem(doc, "Uploads").innerText), "uploads");
+});
+
+test("findSidebarItem returns null when the rail entry is absent", () => {
+  const doc = makeDocument();
+  doc.body.appendChild(element("button", { text: "Music" }));
+  assert.equal(DOM.findSidebarItem(doc, "Record"), null);
+});
+
+test("findFileInput filters by what the input accepts", () => {
+  const doc = makeDocument();
+  const images = element("input", { attributes: { type: "file", accept: "image/*" } });
+  const subs = element("input", { attributes: { type: "file", accept: ".srt,.vtt" } });
+  doc.body.appendChild(images);
+  doc.body.appendChild(subs);
+  assert.equal(DOM.findFileInput(doc, "srt|vtt|subtitle"), subs);
+  assert.equal(DOM.findFileInput(doc, "image"), images);
+  assert.equal(DOM.findFileInput(doc, "audio"), null);
+  assert.equal(DOM.findFileInput(doc), images, "no filter returns the first visible input");
+});
+
+class FakeFile {
+  constructor(parts, name, options = {}) {
+    this.parts = parts;
+    this.name = name;
+    this.type = options.type || "";
+  }
+}
+class FakeDataTransfer {
+  constructor() {
+    this._files = [];
+    this.items = { add: (file) => this._files.push(file) };
+  }
+  get files() {
+    return this._files;
+  }
+}
+
+test("setFileInput attaches a real file and fires change", () => {
+  const doc = makeDocument();
+  const input = element("input", { attributes: { type: "file" } });
+  doc.body.appendChild(input);
+  const win = { File: FakeFile, DataTransfer: FakeDataTransfer, Event };
+  const ok = DOM.setFileInput(input, [{ name: "captions.srt", type: "application/x-subrip", data: "1\n00:00:00,000 --> 00:00:04,000\nhi\n" }], win);
+  assert.equal(ok, true);
+  assert.equal(input.files.length, 1);
+  assert.equal(input.files[0].name, "captions.srt");
+  assert.ok(input.events.some((e) => e.type === "change"));
+});
+
+test("setFileInput bails on engines without File/DataTransfer so callers can fall back", () => {
+  const doc = makeDocument();
+  const input = element("input", { attributes: { type: "file" } });
+  doc.body.appendChild(input);
+  assert.equal(DOM.setFileInput(input, [{ name: "a.srt", data: "x" }], {}), false);
+});
