@@ -79,6 +79,27 @@ Useful when Artistly is flaky or you want a fully headless run.
 `/video` and `/ask` control any open `<video>` element (e.g. the VideoExpress preview) and answer
 questions from its caption track.
 
+## Works on Android too (no extension needed)
+
+Chrome extensions don't run on Android, but **Telegram does** — so the same pipeline also lives in
+the repo's `index.js` (the Render bot your phone already chats with). It reuses the exact same
+tested modules (`extension/src/*`), so behaviour is identical.
+
+On your phone, just message the bot:
+
+```
+/topics human psychology -> pick 1-5 -> /approve
+```
+
+and it sends `script.txt`, `timestamps.txt`, `image_prompts.txt`, `captions.srt`, `metadata.txt`
+(and `/images n` sends rendered images as photos). Then open the three sites in your phone browser
+and upload those files. The desktop extension's auto-fill is the only part that stays desktop-only.
+
+Render env vars (secrets stay out of code): `GEMINI_API_KEY`, and optionally `GEMINI_MODEL`,
+`GEMINI_IMAGE_MODEL`, `VIDEO_CHAT_ID` (locks the video agent to one chat). `TELEGRAM_BOT_TOKEN` and
+`GROQ_API_KEY` are the ones `index.js` already uses. Because `index.js` polls this bot, do **not**
+also point the Chrome extension's Telegram polling at the same token.
+
 ## Development
 
 Everything that matters is pure and dependency-free, so it runs under Node:

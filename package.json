@@ -11,7 +11,7 @@
     "grammy": "^1.45.1"
   },
   "scripts": {
-    "test": "node --test \"extension/test/**/*.test.mjs\"",
+    "test": "node --test \"extension/test/**/*.test.mjs\" \"server/*.test.mjs\"",
     "check:ext": "node extension/tools/check-extension.mjs",
     "icons": "node extension/tools/make-icons.mjs"
   }
